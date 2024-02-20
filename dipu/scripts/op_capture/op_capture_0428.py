@@ -92,9 +92,9 @@ def unique_ops(op_infos):
             op_infos_dict[op_name] = dict()
             op_infos_dict[op_name]["diopi_fun"] = op_info["diopi_fun"]
             op_infos_dict[op_name]["args"] = set()
-            # op_infos_dict[op_name]["count"] = 1
+            op_infos_dict[op_name]["count"] = 1
         op_infos_dict[op_name]["args"].add(str(op_info["args"]))
-        # op_infos_dict[op_name]["count"] += 1
+        op_infos_dict[op_name]["count"] += 1
     print(op_infos_dict.keys())
     for name in op_infos_dict.keys():
         # print(name, op_infos_dict[name]["args"])
@@ -103,8 +103,7 @@ def unique_ops(op_infos):
             op_info["aten_name"] = name
             op_info["diopi_fun"] = op_infos_dict[name]["diopi_fun"]
             op_info["args"] = args
-            #op_info["count"] = op_infos_dict[name]["count"]
-            op_info['count'] = op_infos_dict[name]['args'][args]
+            op_info["count"] = op_infos_dict[name]["count"]
             op_infos_unique.append(op_info)
 
     return op_infos_unique

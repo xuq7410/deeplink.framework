@@ -1,6 +1,7 @@
 // Copyright (c) 2023, DeepLink.
 #include <csrc_dipu/common.h>
 #include <csrc_dipu/runtime/device/deviceapis.h>
+#include <csrc_dipu/runtime/core/DIPUStream.h>
 
 namespace dipu {
 
@@ -200,8 +201,12 @@ void memCopyD2DAsync(const deviceStream_t stream, size_t nbytes,
                      deviceId_t dstDevId, void* dst, deviceId_t srcDevId,
                      const void* src) {
   if (dstDevId == srcDevId) {
+    //if (dipu::devproxy::current_device() == 0)
+    //  printf("tangMemcpyAsync\n");
     DIPU_CALLDROPLET(
         ::tangMemcpyAsync(dst, src, nbytes, tangMemcpyDeviceToDevice, stream))
+    //if (dipu::devproxy::current_device() == 0)
+    //    printf("tangMemcpyAsync over\n");
   } else {
     throw std::runtime_error(
         "dipu device error with tangMemcpyPeerAsync not supported");
@@ -220,8 +225,15 @@ void memCopyH2DAsync(const deviceStream_t stream, size_t nbytes, void* dst,
 // (asynchronous) copy from a device to host
 void memCopyD2HAsync(const deviceStream_t stream, size_t nbytes, void* dst,
                      const void* src) {
-  DIPU_CALLDROPLET(
+    //if (dipu::devproxy::current_device() == 0)
+    //    printf("memCopyD2HAsync\n");
+    DIPU_CALLDROPLET(
       ::tangMemcpyAsync(dst, src, nbytes, tangMemcpyDeviceToHost, stream));
+    //if (dipu::devproxy::current_device() == 0)
+    //    printf("memCopyD2HAsync sync\n");
+    //dipu::getCurrentDIPUStream().synchronize();
+    //if (dipu::devproxy::current_device() == 0)
+    //    printf("memCopyD2HAsync over\n");
 }
 
 }  // end namespace devapis

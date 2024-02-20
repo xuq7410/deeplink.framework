@@ -121,6 +121,8 @@ inline void memCopy(const at::Tensor& dst, const at::Tensor& src,
                     dipu::DIPUStream& stream, DIPUCopyType copyType,
                     bool needMemCpSync, bool nonOverlappingAndDense) {
   int64_t nbytes = getMemCopyBytes(dst, src, nonOverlappingAndDense);
+  //if (dipu::devproxy::current_device() == 0)
+  //  printf("memCopy:%d\n", copyType);
   switch (copyType) {
     case DIPUCopyType::H2D:
       // src is cpu.
@@ -137,8 +139,14 @@ inline void memCopy(const at::Tensor& dst, const at::Tensor& src,
   // op when doing a intermidiate cpu copy after some stream op to guarantee the
   // cpu copy get correct data.
   if (needMemCpSync) {
+    //if (dipu::devproxy::current_device() == 0)
+    //    printf("syncStream before\n");
     dipu::devproxy::syncStream(stream.rawstream());
+    //if (dipu::devproxy::current_device() == 0)
+    //    printf("syncStream over\n");
   }
+  //if (dipu::devproxy::current_device() == 0)
+  //    printf("memCopy over\n");
 }
 
 class CopyParamsInfo {
@@ -372,6 +380,8 @@ class DIPUCopyInplace : public DIPUCopyBase {
                 : at::empty_like(dst, c10::MemoryFormat::Contiguous);
         // TODO(fandaoyi): check if D2OtherD need change device guard.
         auto newInfo = CopyParamsInfo(dstContig, src, info.curStream_);
+        //if (dipu::devproxy::current_device() == 0)
+        //      printf("D2H doDirectMemCopy\n");
         if (newInfo.directMemCopy_) {
           doDirectMemCopy(dstContig, src, newInfo.curStream_,
                           newInfo.copyType_);
@@ -381,11 +391,15 @@ class DIPUCopyInplace : public DIPUCopyBase {
           // 3. direct: dst_contigs_2(D) -> dst_contig(cpu/otherD).
           doDeviceRelayCopy(dstContig, src, non_blocking, newInfo);
         }
+        //if (dipu::devproxy::current_device() == 0)
+        //      printf("D2H doDirectMemCopy over\n");
         // 4. dst_contig -> dst (in same device/cpu), this operation need
         // recurse call kernel, direcet copy cannot handle it.
         if (!dstContig.is_same(dst)) {
           dst.copy_(dstContig);
         }
+        //if (dipu::devproxy::current_device() == 0)
+          //    printf("dst.copy_\n");
       } break;
       case DIPUCopyType::H2D: {
         // 2. create src_contig and src -> src_contig (both cpu).

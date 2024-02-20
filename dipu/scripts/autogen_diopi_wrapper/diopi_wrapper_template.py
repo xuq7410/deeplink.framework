@@ -104,6 +104,9 @@ $cppsignautre {
   ::diopiContext context(dipu::getCurrentDIPUStream().rawstream());
   auto ctx = &context;
 
+  //if (dipu::devproxy::current_device() == 0)
+  //  printf("%s,stream:%d \\n",  __FUNCTION__,ctx->stream);
+
   $input_process_code
 
   $output_process_code
